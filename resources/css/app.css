@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 0%;
+        /* True Black #000000 */
+        --foreground: 0 0% 98%;
+        /* Zinc 50 #FAFAFA */
+
+        /* Brand Surfaces */
+        --surface: 240 5.9% 3.9%;
+        /* Zinc 950 #09090B */
+        --surface-elevated: 240 4.8% 9.6%;
+        /* Zinc 900 #18181B */
+
+        /* Brand Accents */
+        --accent: 18 100% 50%;
+        /* Sunset Orange #FF4D00 */
+        --accent-foreground: 0 0% 100%;
+        --accent-hover: 18 100% 40%;
+        /* #CC3D00 */
+
+        /* Shadcn Compatibility */
+        --primary: 0 0% 98%;
+        --primary-foreground: 240 5.9% 3.9%;
+        --secondary: 240 4.8% 9.6%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 240 3.7% 15.9%;
+        --muted-foreground: 240 5% 64.9%;
+        --border: 240 3.7% 15.9%;
+        --input: 240 3.7% 15.9%;
+        --ring: 18 100% 50%;
+        --radius: 0.75rem;
+
+        --card: 240 5.9% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 240 5.9% 3.9%;
+        --popover-foreground: 0 0% 98%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+
+        --chart-1: 18 100% 50%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-background text-text-primary font-sans antialiased;
+    }
+
+    /* Hide scrollbars globally for feed-like scroll containers */
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+}

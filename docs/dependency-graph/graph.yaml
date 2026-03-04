@@ -1,0 +1,46 @@
+graph:
+  - id: "GTPR-001"
+    title: "Init Laravel Inertia"
+    layer: "L1-data"
+    status: "pending"
+    depends_on: []
+  - id: "GTPR-002"
+    title: "Docker Minio/Postgres"
+    layer: "L1-data"
+    status: "pending"
+    depends_on: []
+  - id: "GTPR-003"
+    title: "Postgres Migrations/Auth"
+    layer: "L1-data"
+    status: "pending"
+    depends_on:
+      - "GTPR-001"
+      - "GTPR-002"
+  - id: "GTPR-004"
+    title: "React Shadcn Theme"
+    layer: "L2-ui-foundation"
+    status: "pending"
+    depends_on:
+      - "GTPR-001"
+  - id: "GTPR-005"
+    title: "Reverb WebSockets"
+    layer: "L3-backend"
+    status: "pending"
+    depends_on:
+      - "GTPR-001"
+  - id: "GTPR-006"
+    title: "S3 Minio Facade"
+    layer: "L3-backend"
+    status: "pending"
+    depends_on:
+      - "GTPR-001"
+      - "GTPR-002"
+  - id: "GTPR-007"
+    title: "Integration Smoke Test"
+    layer: "L5-integration"
+    status: "pending"
+    depends_on:
+      - "GTPR-003"
+      - "GTPR-004"
+      - "GTPR-005"
+      - "GTPR-006"
