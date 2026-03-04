@@ -12,6 +12,7 @@ import {
     X,
 } from 'lucide-react';
 import { LessonItem, PageProps } from '@/types';
+import AppLayout from '@/Layouts/AppLayout';
 
 // ─── Avatar ──────────────────────────────────────────────────────────────────
 
@@ -43,9 +44,9 @@ function Avatar({
 // ─── Level badge ──────────────────────────────────────────────────────────────
 
 const levelColors: Record<string, string> = {
-    beginner:     'bg-green-900/60 text-green-400',
+    beginner: 'bg-green-900/60 text-green-400',
     intermediate: 'bg-yellow-900/60 text-yellow-400',
-    pro:          'bg-red-900/60 text-red-400',
+    pro: 'bg-red-900/60 text-red-400',
 };
 
 function LevelBadge({ level }: { level: string }) {
@@ -60,11 +61,11 @@ function LevelBadge({ level }: { level: string }) {
 
 function SubmitModal({ onClose }: { onClose: () => void }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        title:       '',
+        title: '',
         description: '',
-        level:       'beginner',
-        tags:        '',
-        video:       null as File | null,
+        level: 'beginner',
+        tags: '',
+        video: null as File | null,
     });
 
     const fileRef = useRef<HTMLInputElement>(null);
@@ -288,11 +289,11 @@ function LeftSidebar({
     onSubmit: () => void;
 }) {
     const navItems = [
-        { icon: Home,      label: 'Home',    href: route('video.feed'),    active: false, onClick: undefined as (() => void) | undefined },
-        { icon: Search,    label: 'Search',  href: route('profile.show'),  active: false, onClick: undefined as (() => void) | undefined },
-        { icon: BookOpen,  label: 'Lessons', href: route('lesson.index'),  active: true,  onClick: undefined as (() => void) | undefined },
-        { icon: PlusSquare,label: 'Submit',  href: '#',                    active: false, onClick: onSubmit },
-        { icon: Heart,     label: 'Liked',   href: route('profile.show'),  active: false, onClick: undefined as (() => void) | undefined },
+        { icon: Home, label: 'Home', href: route('video.feed'), active: false, onClick: undefined as (() => void) | undefined },
+        { icon: Search, label: 'Search', href: route('profile.show'), active: false, onClick: undefined as (() => void) | undefined },
+        { icon: BookOpen, label: 'Lessons', href: route('lesson.index'), active: true, onClick: undefined as (() => void) | undefined },
+        { icon: PlusSquare, label: 'Submit', href: '#', active: false, onClick: onSubmit },
+        { icon: Heart, label: 'Liked', href: route('profile.show'), active: false, onClick: undefined as (() => void) | undefined },
     ];
 
     return (
@@ -310,11 +311,10 @@ function LeftSidebar({
             {/* Nav items */}
             <nav className="flex flex-col gap-1 flex-1">
                 {navItems.map(({ icon: Icon, label, href, active, onClick }) => {
-                    const cls = `flex items-center gap-3 rounded-lg px-2 py-2.5 xl:px-3 text-sm font-medium transition-colors ${
-                        active
-                            ? 'text-white bg-surface-elevated'
-                            : 'text-text-secondary hover:text-white hover:bg-surface-elevated'
-                    }`;
+                    const cls = `flex items-center gap-3 rounded-lg px-2 py-2.5 xl:px-3 text-sm font-medium transition-colors ${active
+                        ? 'text-white bg-surface-elevated'
+                        : 'text-text-secondary hover:text-white hover:bg-surface-elevated'
+                        }`;
                     return onClick ? (
                         <button key={label} onClick={onClick} className={cls}>
                             <Icon size={22} className="shrink-0" />
@@ -344,10 +344,10 @@ function LeftSidebar({
 // ─── Lessons Page ─────────────────────────────────────────────────────────────
 
 const LEVELS = [
-    { value: null,           label: 'All' },
-    { value: 'beginner',     label: 'Beginner' },
+    { value: null, label: 'All' },
+    { value: 'beginner', label: 'Beginner' },
     { value: 'intermediate', label: 'Intermediate' },
-    { value: 'pro',          label: 'Pro' },
+    { value: 'pro', label: 'Pro' },
 ];
 
 export default function Index({
@@ -365,84 +365,79 @@ export default function Index({
     };
 
     return (
-        <>
+        <AppLayout authUser={auth.user} onUploadRequest={() => setShowSubmit(true)}>
             <Head title="Lessons" />
 
-            <div className="min-h-screen bg-background text-white">
-                <LeftSidebar authUser={auth.user} onSubmit={() => setShowSubmit(true)} />
-                <MobileBottomNav authUser={auth.user} onSubmit={() => setShowSubmit(true)} />
+            {/* Main content */}
+            <div className="h-full overflow-y-auto">
+                <div className="max-w-4xl mx-auto px-4 py-8">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent shadow-[0_0_14px_rgba(255,77,0,0.4)]">
+                                <BookOpen size={20} className="text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-bold">Lessons</h1>
+                                <p className="text-xs text-text-secondary">Curated guitar lessons from the community</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowSubmit(true)}
+                            className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 transition-colors shadow-[0_0_14px_rgba(255,77,0,0.3)]"
+                        >
+                            <Upload size={15} />
+                            Submit Lesson
+                        </button>
+                    </div>
 
-                <div className="md:pl-16 xl:pl-56 pb-16 md:pb-0">
-                    <div className="max-w-4xl mx-auto px-4 py-8">
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent shadow-[0_0_14px_rgba(255,77,0,0.4)]">
-                                    <BookOpen size={20} className="text-white" />
-                                </div>
-                                <div>
-                                    <h1 className="text-xl font-bold">Lessons</h1>
-                                    <p className="text-xs text-text-secondary">Curated guitar lessons from the community</p>
-                                </div>
+                    {/* Level filter */}
+                    <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
+                        {LEVELS.map(({ value, label }) => (
+                            <button
+                                key={label}
+                                onClick={() => setLevel(value)}
+                                className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${activeLevel === value
+                                    ? 'bg-accent border-accent text-white'
+                                    : 'border-border text-text-secondary hover:text-white hover:border-white/30'
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Lessons grid */}
+                    {lessons.length === 0 ? (
+                        <div className="flex flex-col items-center gap-4 py-24 text-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 border border-accent/20">
+                                <BookOpen size={32} className="text-accent" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold">No lessons yet</h2>
+                                <p className="mt-1 text-text-secondary text-sm">
+                                    Be the first to submit a guitar lesson.
+                                </p>
                             </div>
                             <button
                                 onClick={() => setShowSubmit(true)}
-                                className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90 transition-colors shadow-[0_0_14px_rgba(255,77,0,0.3)]"
+                                className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 font-semibold text-white hover:bg-accent/90"
                             >
-                                <Upload size={15} />
+                                <Upload size={16} />
                                 Submit Lesson
                             </button>
                         </div>
-
-                        {/* Level filter */}
-                        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
-                            {LEVELS.map(({ value, label }) => (
-                                <button
-                                    key={label}
-                                    onClick={() => setLevel(value)}
-                                    className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                                        activeLevel === value
-                                            ? 'bg-accent border-accent text-white'
-                                            : 'border-border text-text-secondary hover:text-white hover:border-white/30'
-                                    }`}
-                                >
-                                    {label}
-                                </button>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {lessons.map(lesson => (
+                                <LessonCard key={lesson.id} lesson={lesson} />
                             ))}
                         </div>
-
-                        {/* Lessons grid */}
-                        {lessons.length === 0 ? (
-                            <div className="flex flex-col items-center gap-4 py-24 text-center">
-                                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/10 border border-accent/20">
-                                    <BookOpen size={32} className="text-accent" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold">No lessons yet</h2>
-                                    <p className="mt-1 text-text-secondary text-sm">
-                                        Be the first to submit a guitar lesson.
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setShowSubmit(true)}
-                                    className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 font-semibold text-white hover:bg-accent/90"
-                                >
-                                    <Upload size={16} />
-                                    Submit Lesson
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                {lessons.map(lesson => (
-                                    <LessonCard key={lesson.id} lesson={lesson} />
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
 
             {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} />}
-        </>
+        </AppLayout>
     );
 }

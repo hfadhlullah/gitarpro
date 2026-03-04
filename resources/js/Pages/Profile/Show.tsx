@@ -4,6 +4,7 @@ import {
     Camera,
     Grid3X3,
     Heart,
+    LogOut,
     MessageCircle,
     Music,
     Music2,
@@ -16,6 +17,7 @@ import {
     X,
 } from 'lucide-react';
 import { CommentItem, PageProps, ProfileUser, VideoItem } from '@/types';
+import AppLayout from '@/Layouts/AppLayout';
 
 // ─── Mini Video Card (grid thumbnail) ───────────────────────────────────────
 
@@ -172,11 +174,10 @@ function VideoModal({
                         {/* Like */}
                         <button
                             onClick={handleLike}
-                            className={`flex flex-col items-center gap-0.5 rounded-full p-2 transition-all active:scale-90 ${
-                                liked
-                                    ? 'bg-accent/20 text-accent'
-                                    : 'bg-surface-elevated text-white hover:bg-border'
-                            }`}
+                            className={`flex flex-col items-center gap-0.5 rounded-full p-2 transition-all active:scale-90 ${liked
+                                ? 'bg-accent/20 text-accent'
+                                : 'bg-surface-elevated text-white hover:bg-border'
+                                }`}
                         >
                             <Heart size={18} fill={liked ? 'currentColor' : 'none'} />
                             <span className="text-xs font-semibold">{likesCount}</span>
@@ -185,11 +186,10 @@ function VideoModal({
                         {/* Comments toggle */}
                         <button
                             onClick={() => setPanel((p) => (p === 'comments' ? null : 'comments'))}
-                            className={`flex flex-col items-center gap-0.5 rounded-full p-2 transition-all active:scale-90 ${
-                                panel === 'comments'
-                                    ? 'bg-accent/20 text-accent'
-                                    : 'bg-surface-elevated text-white hover:bg-border'
-                            }`}
+                            className={`flex flex-col items-center gap-0.5 rounded-full p-2 transition-all active:scale-90 ${panel === 'comments'
+                                ? 'bg-accent/20 text-accent'
+                                : 'bg-surface-elevated text-white hover:bg-border'
+                                }`}
                         >
                             <MessageCircle size={18} fill={panel === 'comments' ? 'currentColor' : 'none'} />
                             <span className="text-xs font-semibold">{commentsCount}</span>
@@ -199,11 +199,10 @@ function VideoModal({
                         {video.tab && (
                             <button
                                 onClick={() => setPanel((p) => (p === 'tab' ? null : 'tab'))}
-                                className={`flex flex-col items-center gap-0.5 rounded-full p-2 transition-all active:scale-90 ${
-                                    panel === 'tab'
-                                        ? 'bg-accent/20 text-accent'
-                                        : 'bg-surface-elevated text-white hover:bg-border'
-                                }`}
+                                className={`flex flex-col items-center gap-0.5 rounded-full p-2 transition-all active:scale-90 ${panel === 'tab'
+                                    ? 'bg-accent/20 text-accent'
+                                    : 'bg-surface-elevated text-white hover:bg-border'
+                                    }`}
                             >
                                 <Music2 size={18} />
                                 <span className="text-xs font-semibold">Tab</span>
@@ -377,153 +376,135 @@ export default function Show({
     const displayVideos = activeTab === 'videos' ? videos : likedVideos;
 
     return (
-        <>
+        <AppLayout authUser={auth.user}>
             <Head title={`${profileUser.name} · GitarPro`} />
 
-            {/* Fixed minimal nav */}
-            <nav className="sticky top-0 z-40 border-b border-border bg-surface/80 backdrop-blur-md">
-                <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
-                    <Link href={route('video.feed')} className="group flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent shadow-[0_0_12px_rgba(255,77,0,0.4)] transition group-hover:scale-105">
-                            <Music size={16} className="text-white" />
-                        </div>
-                        <span className="font-black tracking-tighter text-white">
-                            GITAR<span className="text-accent">PRO</span>
-                        </span>
-                    </Link>
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href={route('video.create')}
-                            className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white hover:bg-accent-hover"
-                        >
-                            <Upload size={13} />
-                            Upload
-                        </Link>
-                        {isOwner && (
-                            <Link
-                                href={route('profile.edit')}
-                                className="rounded-lg border border-border bg-surface-elevated p-1.5 text-text-secondary transition hover:text-white"
-                                title="Settings"
-                            >
-                                <Settings size={16} />
-                            </Link>
+            {/* Main content */}
+            <div className="h-full w-full overflow-y-auto pb-16 md:pb-0">
+                <div className="mx-auto max-w-2xl px-4 py-8">
+                    {/* ── Profile Header ── */}
+                    <div className="flex flex-col items-center py-10 text-center">
+                        {isOwner ? (
+                            <AvatarUpload
+                                photoUrl={profileUser.profile_photo_url}
+                                name={profileUser.name}
+                            />
+                        ) : (
+                            <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-accent shadow-[0_0_20px_rgba(255,77,0,0.4)]">
+                                {profileUser.profile_photo_url ? (
+                                    <img
+                                        src={profileUser.profile_photo_url}
+                                        alt={profileUser.name}
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-surface-elevated text-3xl font-bold text-accent">
+                                        {profileUser.name.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                            </div>
                         )}
-                    </div>
-                </div>
-            </nav>
 
-            <div className="mx-auto max-w-2xl px-4 pb-16">
-                {/* ── Profile Header ── */}
-                <div className="flex flex-col items-center py-10 text-center">
-                    {isOwner ? (
-                        <AvatarUpload
-                            photoUrl={profileUser.profile_photo_url}
-                            name={profileUser.name}
-                        />
-                    ) : (
-                        <div className="h-24 w-24 overflow-hidden rounded-full border-2 border-accent shadow-[0_0_20px_rgba(255,77,0,0.4)]">
-                            {profileUser.profile_photo_url ? (
-                                <img
-                                    src={profileUser.profile_photo_url}
-                                    alt={profileUser.name}
-                                    className="h-full w-full object-cover"
-                                />
+                        <h1 className="mt-4 text-xl font-bold text-white">
+                            {profileUser.name}
+                        </h1>
+
+                        {isOwner && (
+                            <div className="mt-4 flex items-center justify-center gap-3">
+                                <Link href={route('profile.edit')} className="flex items-center gap-2 rounded-lg border border-white/10 bg-surface-elevated px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition-colors">
+                                    <Settings size={16} />
+                                    Edit Profile
+                                </Link>
+                                <Link href={route('logout')} method="post" as="button" className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-900/20 px-4 py-2 text-sm font-semibold text-red-400 hover:bg-red-500/20 transition-colors">
+                                    <LogOut size={16} />
+                                    Log Out
+                                </Link>
+                            </div>
+                        )}
+
+                        {/* Stats row */}
+                        <div className="mt-4 flex gap-8">
+                            <div className="flex flex-col items-center">
+                                <span className="text-lg font-bold text-white">
+                                    {profileUser.videos_count}
+                                </span>
+                                <span className="text-xs text-text-secondary">Videos</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-lg font-bold text-white">
+                                    {profileUser.likes_received}
+                                </span>
+                                <span className="text-xs text-text-secondary">Likes</span>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <span className="text-lg font-bold text-white">
+                                    {likedVideos.length}
+                                </span>
+                                <span className="text-xs text-text-secondary">Liked</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── Tabs ── */}
+                    <div className="flex border-b border-border">
+                        <button
+                            onClick={() => setActiveTab('videos')}
+                            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${activeTab === 'videos'
+                                ? 'border-b-2 border-accent text-accent'
+                                : 'text-text-secondary hover:text-white'
+                                }`}
+                        >
+                            <Grid3X3 size={16} />
+                            Videos
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('liked')}
+                            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${activeTab === 'liked'
+                                ? 'border-b-2 border-accent text-accent'
+                                : 'text-text-secondary hover:text-white'
+                                }`}
+                        >
+                            <Heart size={16} />
+                            Liked
+                        </button>
+                    </div>
+
+                    {/* ── Grid ── */}
+                    {displayVideos.length === 0 ? (
+                        <div className="flex flex-col items-center gap-4 py-20 text-center">
+                            {activeTab === 'videos' ? (
+                                <>
+                                    <Video size={40} className="text-text-secondary" />
+                                    <p className="text-text-secondary">No videos yet.</p>
+                                    {isOwner && (
+                                        <Link
+                                            href={route('video.create')}
+                                            className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
+                                        >
+                                            <Upload size={16} />
+                                            Upload your first video
+                                        </Link>
+                                    )}
+                                </>
                             ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-surface-elevated text-3xl font-bold text-accent">
-                                    {profileUser.name.charAt(0).toUpperCase()}
-                                </div>
+                                <>
+                                    <Heart size={40} className="text-text-secondary" />
+                                    <p className="text-text-secondary">No liked videos yet.</p>
+                                </>
                             )}
                         </div>
+                    ) : (
+                        <div className="mt-1 grid grid-cols-3 gap-0.5">
+                            {displayVideos.map((video) => (
+                                <VideoThumbnail
+                                    key={video.id}
+                                    video={video}
+                                    onClick={() => setSelectedVideo(video)}
+                                />
+                            ))}
+                        </div>
                     )}
-
-                    <h1 className="mt-4 text-xl font-bold text-white">
-                        {profileUser.name}
-                    </h1>
-
-                    {/* Stats row */}
-                    <div className="mt-4 flex gap-8">
-                        <div className="flex flex-col items-center">
-                            <span className="text-lg font-bold text-white">
-                                {profileUser.videos_count}
-                            </span>
-                            <span className="text-xs text-text-secondary">Videos</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-lg font-bold text-white">
-                                {profileUser.likes_received}
-                            </span>
-                            <span className="text-xs text-text-secondary">Likes</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-lg font-bold text-white">
-                                {likedVideos.length}
-                            </span>
-                            <span className="text-xs text-text-secondary">Liked</span>
-                        </div>
-                    </div>
                 </div>
-
-                {/* ── Tabs ── */}
-                <div className="flex border-b border-border">
-                    <button
-                        onClick={() => setActiveTab('videos')}
-                        className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
-                            activeTab === 'videos'
-                                ? 'border-b-2 border-accent text-accent'
-                                : 'text-text-secondary hover:text-white'
-                        }`}
-                    >
-                        <Grid3X3 size={16} />
-                        Videos
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('liked')}
-                        className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${
-                            activeTab === 'liked'
-                                ? 'border-b-2 border-accent text-accent'
-                                : 'text-text-secondary hover:text-white'
-                        }`}
-                    >
-                        <Heart size={16} />
-                        Liked
-                    </button>
-                </div>
-
-                {/* ── Grid ── */}
-                {displayVideos.length === 0 ? (
-                    <div className="flex flex-col items-center gap-4 py-20 text-center">
-                        {activeTab === 'videos' ? (
-                            <>
-                                <Video size={40} className="text-text-secondary" />
-                                <p className="text-text-secondary">No videos yet.</p>
-                                {isOwner && (
-                                    <Link
-                                        href={route('video.create')}
-                                        className="flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
-                                    >
-                                        <Upload size={16} />
-                                        Upload your first video
-                                    </Link>
-                                )}
-                            </>
-                        ) : (
-                            <>
-                                <Heart size={40} className="text-text-secondary" />
-                                <p className="text-text-secondary">No liked videos yet.</p>
-                            </>
-                        )}
-                    </div>
-                ) : (
-                    <div className="mt-1 grid grid-cols-3 gap-0.5">
-                        {displayVideos.map((video) => (
-                            <VideoThumbnail
-                                key={video.id}
-                                video={video}
-                                onClick={() => setSelectedVideo(video)}
-                            />
-                        ))}
-                    </div>
-                )}
             </div>
 
             {/* ── Video modal ── */}
@@ -534,6 +515,6 @@ export default function Show({
                     onClose={() => setSelectedVideo(null)}
                 />
             )}
-        </>
+        </AppLayout>
     );
 }

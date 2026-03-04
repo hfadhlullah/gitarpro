@@ -13,6 +13,7 @@ import {
     Trash2,
     User,
 } from 'lucide-react';
+import AppLayout from '@/Layouts/AppLayout';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
@@ -137,106 +138,98 @@ export default function Edit({
     };
 
     return (
-        <>
+        <AppLayout authUser={auth.user}>
             <Head title="Settings" />
 
-            <div className="min-h-screen bg-background text-white">
-                {/* Left sidebar — desktop */}
-                <LeftSidebar authUser={auth.user} />
+            {/* Main content */}
+            <div className="h-full overflow-y-auto">
+                <div className="max-w-2xl mx-auto px-4 py-8">
 
-                {/* Mobile bottom nav */}
-                <MobileBottomNav authUser={auth.user} />
+                    {/* Page title */}
+                    <div className="mb-8 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20">
+                            <Settings size={20} className="text-accent" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold text-white">Settings</h1>
+                            <p className="text-sm text-text-secondary">Manage your account</p>
+                        </div>
+                        <Link
+                            href={route('profile.show')}
+                            className="ml-auto text-sm text-text-secondary hover:text-accent transition-colors"
+                        >
+                            ← Back to profile
+                        </Link>
+                    </div>
 
-                {/* Main content */}
-                <div className="md:pl-16 xl:pl-56 pb-16 md:pb-0">
-                    <div className="max-w-2xl mx-auto px-4 py-8">
-
-                        {/* Page title */}
-                        <div className="mb-8 flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20">
-                                <Settings size={20} className="text-accent" />
+                    {/* Profile Information */}
+                    <section id="profile" className="rounded-2xl border border-border bg-surface p-6 mb-4">
+                        <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
+                                <User size={16} className="text-accent" />
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold text-white">Settings</h1>
-                                <p className="text-sm text-text-secondary">Manage your account</p>
+                                <h2 className="text-base font-semibold text-white">Profile Information</h2>
+                                <p className="text-xs text-text-secondary">Update your name and email address</p>
                             </div>
-                            <Link
-                                href={route('profile.show')}
-                                className="ml-auto text-sm text-text-secondary hover:text-accent transition-colors"
+                        </div>
+                        <UpdateProfileInformationForm
+                            mustVerifyEmail={mustVerifyEmail}
+                            status={status}
+                        />
+                    </section>
+
+                    {/* Update Password */}
+                    <section id="password" className="rounded-2xl border border-border bg-surface p-6 mb-4">
+                        <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
+                                <Shield size={16} className="text-accent" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-semibold text-white">Update Password</h2>
+                                <p className="text-xs text-text-secondary">Use a strong, unique password</p>
+                            </div>
+                        </div>
+                        <UpdatePasswordForm />
+                    </section>
+
+                    {/* Delete Account */}
+                    <section id="delete" className="rounded-2xl border border-red-900/40 bg-surface p-6 mb-4">
+                        <div className="mb-5 flex items-center gap-3 border-b border-red-900/30 pb-4">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-900/20">
+                                <Trash2 size={16} className="text-red-400" />
+                            </div>
+                            <div>
+                                <h2 className="text-base font-semibold text-white">Delete Account</h2>
+                                <p className="text-xs text-text-secondary">Permanently remove your account and all data</p>
+                            </div>
+                        </div>
+                        <DeleteUserForm />
+                    </section>
+
+                    {/* Log Out — at the very end */}
+                    <div className="rounded-2xl border border-border bg-surface p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-elevated">
+                                    <LogOut size={16} className="text-text-secondary" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-white">Log out</p>
+                                    <p className="text-xs text-text-secondary">Sign out of your account</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleLogout}
+                                className="rounded-lg border border-border bg-surface-elevated px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-red-500/50 hover:bg-red-900/20 hover:text-red-400"
                             >
-                                ← Back to profile
-                            </Link>
+                                Log Out
+                            </button>
                         </div>
-
-                        {/* Profile Information */}
-                        <section id="profile" className="rounded-2xl border border-border bg-surface p-6 mb-4">
-                            <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
-                                    <User size={16} className="text-accent" />
-                                </div>
-                                <div>
-                                    <h2 className="text-base font-semibold text-white">Profile Information</h2>
-                                    <p className="text-xs text-text-secondary">Update your name and email address</p>
-                                </div>
-                            </div>
-                            <UpdateProfileInformationForm
-                                mustVerifyEmail={mustVerifyEmail}
-                                status={status}
-                            />
-                        </section>
-
-                        {/* Update Password */}
-                        <section id="password" className="rounded-2xl border border-border bg-surface p-6 mb-4">
-                            <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
-                                    <Shield size={16} className="text-accent" />
-                                </div>
-                                <div>
-                                    <h2 className="text-base font-semibold text-white">Update Password</h2>
-                                    <p className="text-xs text-text-secondary">Use a strong, unique password</p>
-                                </div>
-                            </div>
-                            <UpdatePasswordForm />
-                        </section>
-
-                        {/* Delete Account */}
-                        <section id="delete" className="rounded-2xl border border-red-900/40 bg-surface p-6 mb-4">
-                            <div className="mb-5 flex items-center gap-3 border-b border-red-900/30 pb-4">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-900/20">
-                                    <Trash2 size={16} className="text-red-400" />
-                                </div>
-                                <div>
-                                    <h2 className="text-base font-semibold text-white">Delete Account</h2>
-                                    <p className="text-xs text-text-secondary">Permanently remove your account and all data</p>
-                                </div>
-                            </div>
-                            <DeleteUserForm />
-                        </section>
-
-                        {/* Log Out — at the very end */}
-                        <div className="rounded-2xl border border-border bg-surface p-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-elevated">
-                                        <LogOut size={16} className="text-text-secondary" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-white">Log out</p>
-                                        <p className="text-xs text-text-secondary">Sign out of your account</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleLogout}
-                                    className="rounded-lg border border-border bg-surface-elevated px-4 py-2 text-sm font-medium text-text-secondary transition hover:border-red-500/50 hover:bg-red-900/20 hover:text-red-400"
-                                >
-                                    Log Out
-                                </button>
-                            </div>
-                        </div>
-
                     </div>
+
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }

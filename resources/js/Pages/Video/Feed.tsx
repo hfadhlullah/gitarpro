@@ -1,8 +1,10 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Bookmark,
     BookOpen,
+    ChevronDown,
+    ChevronUp,
     FileVideo,
     Heart,
     Home,
@@ -20,6 +22,7 @@ import {
 } from 'lucide-react';
 import InputError from '@/Components/InputError';
 import { CommentItem, PageProps, SuggestedUser, VideoItem } from '@/types';
+import AppLayout from '@/Layouts/AppLayout';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -112,10 +115,10 @@ function CommentsPanel({
     };
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col h-full">
             {/* Comments list */}
             {comments.length > 0 && (
-                <div className="px-4 pb-2 space-y-2 max-h-40 overflow-y-auto">
+                <div className="px-4 pb-2 pt-2 space-y-4 flex-1 overflow-y-auto scrollbar-hide">
                     {comments.map((c) => (
                         <div key={c.id} className="flex items-start gap-2 group">
                             <Avatar name={c.user.name} size={24} />
@@ -195,7 +198,19 @@ function PostCard({
     const [saved, setSaved] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [showTab, setShowTab] = useState(false);
+    const [aspectRatio, setAspectRatio] = useState<'9/16' | '16/9'>('9/16');
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        const isPanelOpen = showComments || showTab;
+        window.dispatchEvent(new CustomEvent('feedPanelToggle', { detail: isPanelOpen }));
+        // Ensure cleanup hides the panel globally when component unmounts
+        return () => {
+            if (isPanelOpen) {
+                window.dispatchEvent(new CustomEvent('feedPanelToggle', { detail: false }));
+            }
+        };
+    }, [showComments, showTab]);
 
     const handleLike = () => {
         setLiked((p) => !p);
@@ -210,117 +225,194 @@ function PostCard({
         });
     };
 
+    const handleLoadedMetadata = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+        const videoEl = e.target as HTMLVideoElement;
+        if (videoEl.videoWidth > videoEl.videoHeight) {
+            setAspectRatio('16/9');
+        } else {
+            setAspectRatio('9/16');
+        }
+    };
+
     return (
-        <article className="border border-border rounded-xl bg-surface overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3">
-                <Link href={route('profile.show.user', video.user?.id ?? 0)}>
-                    <Avatar
-                        name={video.user?.name ?? '?'}
-                        photoUrl={video.user?.profile_photo_url}
-                        size={36}
-                        ring
-                    />
-                </Link>
-                <div className="flex-1 min-w-0">
-                    <Link
-                        href={route('profile.show.user', video.user?.id ?? 0)}
-                        className="text-sm font-semibold text-white hover:underline"
-                    >
-                        {video.user?.name ?? 'Unknown'}
-                    </Link>
-                    <div className="text-xs text-text-secondary">{video.created_at}</div>
+        <article className="relative flex items-center justify-center w-full h-[calc(100svh-4rem)] md:h-screen snap-center snap-always shrink-0 group overflow-hidden">
+
+            {/* Video + Options Wrapper. Slides left by 400px when commenting */}
+            <div className={`flex items-end gap-4 h-full md:h-[calc(100%-2rem)] xl:h-[calc(100%-4rem)] pt-4 pb-4 md:pt-0 md:pb-0 w-full justify-center transition-all duration-300 ${(showComments || showTab) ? 'md:-translate-x-[200px]' : ''}`}>
+
+
+                {/* ─── Video Container ─── */}
+                <div
+                    className={`relative bg-black sm:bg-neutral-900 sm:rounded-2xl overflow-hidden sm:shadow-2xl flex items-center justify-center sm:border sm:border-white/5 shrink-0 transition-all duration-300
+                        ${aspectRatio === '16/9'
+                            ? 'w-full max-w-[1000px] aspect-video max-h-full sm:mx-8'
+                            : 'h-full w-auto aspect-[9/16] max-w-[calc(100vw-6rem)] sm:max-w-none'
+                        }
+                    `}
+                >
+                    <div className="absolute inset-0 flex items-center justify-center w-full h-full">
+                        <video
+                            ref={videoRef}
+                            src={video.url}
+                            onLoadedMetadata={handleLoadedMetadata}
+                            controls
+                            playsInline
+                            loop
+                            className="w-full h-full object-cover bg-black"
+                        />
+                    </div>
+
+                    {/* Dark Scrim for bottom text readability */}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+
+                    {/* Top Right: Tab Badge */}
+                    {video.tab && (
+                        <button
+                            onClick={() => setShowTab((p) => !p)}
+                            className={`absolute top-4 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold pointer-events-auto backdrop-blur-md transition z-10 ${showTab
+                                ? 'bg-accent text-white shadow-[0_0_15px_rgba(255,77,0,0.4)]'
+                                : 'bg-black/30 text-white hover:bg-black/60'
+                                }`}
+                        >
+                            <Music2 size={14} />
+                            Tab
+                        </button>
+                    )}
+
+                    {/* Bottom Left Info */}
+                    <div className="absolute bottom-4 left-4 right-16 sm:right-4 flex flex-col items-start gap-1 pointer-events-auto z-10 w-max max-w-[calc(100%-4rem)] sm:max-w-full">
+                        <Link
+                            href={route('profile.show.user', video.user?.id ?? 0)}
+                            className="font-bold text-base hover:underline text-white drop-shadow"
+                        >
+                            {video.user?.name ?? 'Unknown'}
+                        </Link>
+                        <p className="text-sm text-white/90 line-clamp-2 drop-shadow-sm max-w-sm">
+                            {video.title}
+                        </p>
+                        <div className="mt-1 flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 text-xs text-white/70">
+                                <Music size={12} /> original sound - {video.user?.name}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mobile action overlay (only shown on mobile < sm) */}
+                    <div className="absolute right-2 bottom-6 flex sm:hidden flex-col items-center gap-4 z-20 pointer-events-auto">
+                        <Link href={route('profile.show.user', video.user?.id ?? 0)} className="mb-2 drop-shadow-lg">
+                            <Avatar
+                                name={video.user?.name ?? '?'}
+                                photoUrl={video.user?.profile_photo_url}
+                                size={44}
+                                ring
+                            />
+                        </Link>
+
+                        <button
+                            onClick={handleLike}
+                            className="flex flex-col items-center gap-1 text-white drop-shadow-md"
+                        >
+                            <Heart size={28} fill={liked ? '#FF4D00' : 'none'} className={liked ? 'text-accent' : ''} />
+                            <span className="text-xs font-bold">{likesCount}</span>
+                        </button>
+
+                        <button
+                            onClick={() => setShowComments((p) => !p)}
+                            className="flex flex-col items-center gap-1 text-white drop-shadow-md"
+                        >
+                            <MessageCircle size={28} fill="currentColor" />
+                            <span className="text-xs font-bold">{video.comments_count ?? 0}</span>
+                        </button>
+
+                        <button
+                            onClick={() => setSaved((p) => !p)}
+                            className="flex flex-col items-center gap-1 text-white drop-shadow-md"
+                        >
+                            <Bookmark size={28} fill={saved ? '#FF4D00' : 'currentColor'} className={saved ? 'text-accent' : ''} />
+                            <span className="text-xs font-bold">{saved ? 'Saved' : 'Save'}</span>
+                        </button>
+
+                        <button className="flex flex-col items-center gap-1 text-white drop-shadow-md">
+                            <Send size={28} fill="currentColor" />
+                            <span className="text-xs font-bold">Share</span>
+                        </button>
+                    </div>
                 </div>
-                <button className="text-text-secondary hover:text-white transition p-1">
-                    <MoreHorizontal size={18} />
-                </button>
-            </div>
 
-            {/* Video */}
-            <div className="relative bg-black">
-                <video
-                    ref={videoRef}
-                    src={video.url}
-                    controls
-                    playsInline
-                    className="w-full max-h-[520px] object-contain"
-                />
-                {/* Tab badge if has tab */}
-                {video.tab && (
+                {/* ─── Right Interaction Sidebar (Desktop > sm) ─── */}
+                <div className="hidden sm:flex flex-col items-center gap-4 mb-4">
+                    <Link href={route('profile.show.user', video.user?.id ?? 0)} className="mb-2">
+                        <Avatar
+                            name={video.user?.name ?? '?'}
+                            photoUrl={video.user?.profile_photo_url}
+                            size={48}
+                            ring
+                        />
+                    </Link>
+
                     <button
-                        onClick={() => setShowTab((p) => !p)}
-                        className={`absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold backdrop-blur-sm transition ${
-                            showTab
-                                ? 'bg-accent text-white'
-                                : 'bg-black/50 text-white hover:bg-accent/80'
-                        }`}
+                        onClick={handleLike}
+                        className="flex flex-col items-center gap-1 text-white hover:text-white/80 transition-colors group/btn"
                     >
-                        <Music2 size={12} />
-                        Tab
+                        <div className="p-3 rounded-full bg-surface-elevated/50 hover:bg-surface-elevated transition-colors border border-white/5">
+                            <Heart size={24} fill={liked ? '#FF4D00' : 'none'} className={liked ? 'text-accent' : ''} />
+                        </div>
+                        <span className="text-xs font-semibold text-text-secondary">{likesCount}</span>
                     </button>
-                )}
+
+                    <button
+                        onClick={() => setShowComments((p) => !p)}
+                        className="flex flex-col items-center gap-1 text-white hover:text-white/80 transition-colors"
+                    >
+                        <div className="p-3 rounded-full bg-surface-elevated/50 hover:bg-surface-elevated transition-colors border border-white/5">
+                            <MessageCircle size={24} fill="currentColor" className="text-white" />
+                        </div>
+                        <span className="text-xs font-semibold text-text-secondary">{video.comments_count ?? 0}</span>
+                    </button>
+
+                    <button
+                        onClick={() => setSaved((p) => !p)}
+                        className="flex flex-col items-center gap-1 text-white hover:text-white/80 transition-colors"
+                    >
+                        <div className="p-3 rounded-full bg-surface-elevated/50 hover:bg-surface-elevated transition-colors border border-white/5">
+                            <Bookmark size={24} fill={saved ? '#FF4D00' : 'currentColor'} className={saved ? 'text-accent' : 'text-white'} />
+                        </div>
+                        <span className="text-xs font-semibold text-text-secondary">{saved ? 'Saved' : 'Save'}</span>
+                    </button>
+
+                    <button className="flex flex-col items-center gap-1 text-white hover:text-white/80 transition-colors">
+                        <div className="p-3 rounded-full bg-surface-elevated/50 hover:bg-surface-elevated transition-colors border border-white/5">
+                            <Send size={24} fill="currentColor" />
+                        </div>
+                        <span className="text-xs font-semibold text-text-secondary">Share</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Actions row */}
-            <div className="flex items-center gap-1 px-3 pt-3 pb-1">
-                {/* Like */}
-                <button
-                    onClick={handleLike}
-                    className={`p-2 rounded-full transition-all active:scale-90 ${liked ? 'text-accent' : 'text-white hover:text-text-secondary'}`}
-                >
-                    <Heart size={24} fill={liked ? 'currentColor' : 'none'} />
-                </button>
-                {/* Comment */}
-                <button
-                    onClick={() => setShowComments((p) => !p)}
-                    className={`p-2 rounded-full transition ${showComments ? 'text-accent' : 'text-white hover:text-text-secondary'}`}
-                >
-                    <MessageCircle size={24} />
-                </button>
-                {/* Share / send — cosmetic */}
-                <button className="p-2 rounded-full text-white hover:text-text-secondary transition">
-                    <Send size={22} />
-                </button>
-                {/* Spacer */}
-                <div className="flex-1" />
-                {/* Bookmark */}
-                <button
-                    onClick={() => setSaved((p) => !p)}
-                    className={`p-2 rounded-full transition ${saved ? 'text-accent' : 'text-white hover:text-text-secondary'}`}
-                >
-                    <Bookmark size={24} fill={saved ? 'currentColor' : 'none'} />
-                </button>
-            </div>
+            {/* Right Side Panel for Comments / Tab */}
+            {(showTab || showComments) && (
+                <>
+                    {/* Mobile click-to-close backdrop */}
+                    <div className="md:hidden fixed inset-0 z-30" onClick={() => { setShowTab(false); setShowComments(false) }} />
+                    <div className="absolute inset-y-0 right-0 z-50 w-full md:w-[400px] border-l border-white/10 bg-[#111] flex flex-col pt-16 md:pt-0 transform transition-transform duration-300 animate-in slide-in-from-right-8">
+                        {/* Panel Header */}
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0 sticky top-0 bg-[#0a0a0a] z-10 shadow-md">
+                            <span className="font-bold text-white text-base flex items-center gap-2">
+                                {showTab ? 'Guitar Tab' : 'Comments'}
+                                {showComments && <span className="text-white/40 font-normal text-sm">{video.comments_count ?? 0}</span>}
+                            </span>
+                            <button onClick={() => { setShowTab(false); setShowComments(false) }} className="p-2 rounded-full bg-white/5 text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                                <X size={18} />
+                            </button>
+                        </div>
 
-            {/* Likes count */}
-            <div className="px-4 pb-1">
-                <span className="text-sm font-semibold text-white">
-                    {likesCount} {likesCount === 1 ? 'like' : 'likes'}
-                </span>
-            </div>
-
-            {/* Title as caption */}
-            <div className="px-4 pb-3">
-                <span className="text-sm font-semibold text-white mr-2">{video.user?.name}</span>
-                <span className="text-sm text-text-primary">{video.title}</span>
-            </div>
-
-            {/* Comment count toggle */}
-            {(video.comments_count ?? 0) > 0 && !showComments && (
-                <button
-                    onClick={() => setShowComments(true)}
-                    className="px-4 pb-2 text-sm text-text-secondary hover:text-white transition"
-                >
-                    View all {video.comments_count} comments
-                </button>
-            )}
-
-            {/* Tab panel */}
-            {showTab && video.tab && <TabPanel tab={video.tab} />}
-
-            {/* Comments panel */}
-            {showComments && (
-                <CommentsPanel video={video} authUserId={authUserId} />
+                        {/* Panel Content flex auto so it takes remainder of height */}
+                        <div className="overflow-y-auto flex-1 bg-black sm:bg-[#111] scrollbar-hide">
+                            {showTab && video.tab && <TabPanel tab={video.tab} />}
+                            {showComments && <CommentsPanel video={video} authUserId={authUserId} />}
+                        </div>
+                    </div>
+                </>
             )}
         </article>
     );
@@ -404,11 +496,10 @@ function UploadModal({ onClose }: { onClose: () => void }) {
                     {/* Drop zone */}
                     <div
                         onClick={() => fileInputRef.current?.click()}
-                        className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition-all ${
-                            data.video
-                                ? 'border-accent bg-accent/5'
-                                : 'border-border bg-background hover:border-accent hover:bg-surface-elevated'
-                        }`}
+                        className={`group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed p-10 text-center transition-all ${data.video
+                            ? 'border-accent bg-accent/5'
+                            : 'border-border bg-background hover:border-accent hover:bg-surface-elevated'
+                            }`}
                     >
                         <input
                             type="file"
@@ -527,6 +618,47 @@ function UploadModal({ onClose }: { onClose: () => void }) {
     );
 }
 
+// ─── Scroll Nav Buttons ────────────────────────────────────────────────────────
+
+function FeedScrollNav({ scrollContainerRef }: { scrollContainerRef: React.RefObject<HTMLDivElement> }) {
+    const [shifted, setShifted] = useState(false);
+
+    useEffect(() => {
+        const handleToggle = (e: Event) => {
+            const customEvent = e as CustomEvent<boolean>;
+            setShifted(customEvent.detail);
+        };
+        window.addEventListener('feedPanelToggle', handleToggle);
+        return () => window.removeEventListener('feedPanelToggle', handleToggle);
+    }, []);
+
+    const scroll = (direction: 'up' | 'down') => {
+        if (!scrollContainerRef.current) return;
+        const container = scrollContainerRef.current;
+        const scrollAmount = window.innerHeight; // Scroll by viewport height
+        container.scrollBy({ top: direction === 'down' ? scrollAmount : -scrollAmount, behavior: 'smooth' });
+    };
+
+    return (
+        <div className={`fixed top-[calc(50vh-48px)] z-40 hidden lg:flex flex-col gap-3 transition-all duration-300 ${shifted ? 'right-[424px]' : 'right-6'}`}>
+            <button
+                onClick={() => scroll('up')}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-elevated hover:bg-white/20 transition-colors text-white border border-white/10 shadow-lg"
+                aria-label="Scroll Up"
+            >
+                <ChevronUp size={24} />
+            </button>
+            <button
+                onClick={() => scroll('down')}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-elevated hover:bg-white/20 transition-colors text-white border border-white/10 shadow-lg"
+                aria-label="Scroll Down"
+            >
+                <ChevronDown size={24} />
+            </button>
+        </div>
+    );
+}
+
 // ─── Mobile Bottom Nav ────────────────────────────────────────────────────────
 
 function MobileBottomNav({ authUser, onUpload }: { authUser: { id: number; name: string; profile_photo_url?: string | null }; onUpload: () => void }) {
@@ -583,11 +715,10 @@ function LeftSidebar({ authUser, onUpload }: { authUser: { id: number; name: str
             {/* Nav items */}
             <nav className="flex flex-col gap-1 flex-1">
                 {navItems.map(({ icon: Icon, label, href, active, onClick }) => {
-                    const cls = `flex items-center gap-3 rounded-lg px-2 py-2.5 xl:px-3 text-sm font-medium transition-colors ${
-                        active
-                            ? 'text-white bg-surface-elevated'
-                            : 'text-text-secondary hover:text-white hover:bg-surface-elevated'
-                    }`;
+                    const cls = `flex items-center gap-3 rounded-lg px-2 py-2.5 xl:px-3 text-sm font-medium transition-colors ${active
+                        ? 'text-white bg-surface-elevated'
+                        : 'text-text-secondary hover:text-white hover:bg-surface-elevated'
+                        }`;
                     return onClick ? (
                         <button key={label} onClick={onClick} className={cls}>
                             <Icon size={22} className="shrink-0" />
@@ -717,70 +848,48 @@ export default function Feed({
     suggestedUsers: SuggestedUser[];
 }>) {
     const [showUpload, setShowUpload] = useState(false);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     return (
-        <>
+        <AppLayout authUser={auth.user} onUploadRequest={() => setShowUpload(true)}>
             <Head title="Feed" />
 
-            <div className="min-h-screen bg-background text-white">
-                {/* Left sidebar — desktop only */}
-                <LeftSidebar authUser={auth.user} onUpload={() => setShowUpload(true)} />
-
-                {/* Mobile bottom nav */}
-                <MobileBottomNav authUser={auth.user} onUpload={() => setShowUpload(true)} />
-
-                {/* Main content — offset by sidebar width on desktop, bottom-padded on mobile */}
-                <div className="md:pl-16 xl:pl-56 pb-16 md:pb-0">
-                    <div className="max-w-[935px] mx-auto px-4 py-6 flex gap-8">
-                        {/* Center feed column */}
-                        <div className="flex-1 min-w-0 max-w-[470px]">
-                            {/* Stories row */}
-                            <StoriesRow users={suggestedUsers} />
-
-                            {/* Posts */}
-                            {videos.length === 0 ? (
-                                <div className="flex flex-col items-center gap-6 py-24 text-center">
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent shadow-[0_0_30px_rgba(255,77,0,0.4)]">
-                                        <Music size={32} />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-2xl font-bold">No videos yet</h2>
-                                        <p className="mt-1 text-text-secondary">
-                                            Be the first to share a guitar cover.
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => setShowUpload(true)}
-                                        className="flex items-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-white shadow-[0_0_20px_rgba(255,77,0,0.3)] hover:bg-accent-hover"
-                                    >
-                                        <Upload size={18} />
-                                        Upload a Video
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-6">
-                                    {videos.map((video) => (
-                                        <PostCard
-                                            key={video.id}
-                                            video={video}
-                                            authUserId={auth.user.id}
-                                        />
-                                    ))}
-                                </div>
-                            )}
+            <FeedScrollNav scrollContainerRef={scrollContainerRef} />
+            <div ref={scrollContainerRef} className="h-[calc(100svh-4rem)] md:h-screen w-full snap-y snap-mandatory overflow-y-scroll overflow-x-hidden pt-16 md:pt-0 scrollbar-hide relative bg-black">
+                {videos.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center gap-6 h-full text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent shadow-[0_0_30px_rgba(255,77,0,0.4)]">
+                            <Music size={32} />
                         </div>
-
-                        {/* Right sidebar */}
-                        <RightSidebar
-                            authUser={auth.user}
-                            suggestedUsers={suggestedUsers}
-                        />
+                        <div>
+                            <h2 className="text-2xl font-bold">No videos yet</h2>
+                            <p className="mt-1 text-white/50">
+                                Be the first to share a guitar cover.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowUpload(true)}
+                            className="flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 font-bold text-white shadow-[0_0_20px_rgba(255,77,0,0.3)] hover:bg-accent-hover hover:scale-[1.02] active:scale-95 transition-all"
+                        >
+                            Upload a Video
+                        </button>
                     </div>
-                </div>
+                ) : (
+                    videos.map((video) => (
+                        <PostCard
+                            key={video.id}
+                            video={video}
+                            authUserId={auth.user.id}
+                        />
+                    ))
+                )}
             </div>
+
+            {/* Top overlay gradients to help header text readability on mobile */}
+            <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-black/60 to-transparent pointer-events-none md:hidden z-10" />
 
             {/* Upload modal */}
             {showUpload && <UploadModal onClose={() => setShowUpload(false)} />}
-        </>
+        </AppLayout>
     );
 }
