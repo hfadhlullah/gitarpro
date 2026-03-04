@@ -2,6 +2,7 @@ import { PageProps } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { Music, Guitar, Star, Users, PlayCircle } from 'lucide-react';
 import { MorphingText } from '@/components/ui/morphing-text';
+import { BeamsBackground } from '@/components/ui/beams-background';
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 // ─────────────────────────────────────────────
@@ -154,11 +155,6 @@ export default function Welcome({ auth }: PageProps) {
 
             <div className="relative overflow-x-hidden bg-background text-text-primary selection:bg-accent selection:text-white">
 
-                {/* Ambient glow */}
-                <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[500px]">
-                    <div className="absolute left-1/2 top-0 h-full w-[700px] -translate-x-1/2 rounded-full bg-accent/8 blur-[140px]" />
-                </div>
-
                 {/* ══════════════════════════
                     STICKY HEADER
                 ══════════════════════════ */}
@@ -209,61 +205,47 @@ export default function Welcome({ auth }: PageProps) {
                 </header>
 
                 {/* ══════════════════════════
-                    HERO  — max height = screen
+                    HERO  — BeamsBackground wraps the full hero viewport
                 ══════════════════════════ */}
-                <section
-                    className="relative z-10 flex max-h-screen min-h-[calc(100svh-4rem)] flex-col items-center justify-center px-6 pb-10 pt-8 text-center"
-                    aria-label="Hero"
+                <BeamsBackground
+                    intensity="medium"
+                    className="max-h-screen min-h-[calc(100svh-4rem)]"
                 >
-                    {/* Static headline */}
-                    <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-text-secondary/50">
-                        The guitar community platform
-                    </p>
+                    <section
+                        className="flex flex-col items-center justify-center px-6 pb-10 pt-8 text-center h-full min-h-[calc(100svh-4rem)]"
+                        aria-label="Hero"
+                    >
+                        {/* Static headline */}
+                        <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-text-secondary/50">
+                            The guitar community platform
+                        </p>
 
-                    <h1 className="text-[clamp(2.4rem,5.5vw,4.5rem)] font-extrabold leading-[1.1] tracking-tight">
-                        Show your skills.
-                    </h1>
+                        <h1 className="text-[clamp(2.4rem,5.5vw,4.5rem)] font-extrabold leading-[1.1] tracking-tight">
+                            Show your skills.
+                        </h1>
 
-                    {/* Morphing line — orange, sized relative to h1 */}
-                    <div className="w-full max-w-3xl">
-                        <MorphingText
-                            texts={MORPH_TEXTS}
-                            className="
+                        {/* Morphing line — orange, sized relative to h1 */}
+                        <div className="w-full max-w-3xl">
+                            <MorphingText
+                                texts={MORPH_TEXTS}
+                                className="
                                 text-accent
                                 h-[1.3em]
                                 text-[clamp(2.4rem,5.5vw,4.5rem)]
                                 md:h-[1.3em]
                                 lg:text-[clamp(2.4rem,5.5vw,4.5rem)]
                             "
-                        />
-                    </div>
+                            />
+                        </div>
 
-                    {/* Subtitle */}
-                    <p className="mt-4 max-w-lg text-base leading-relaxed text-text-secondary sm:text-lg">
-                        Upload covers, share tabs, and level up your skills with a global community of guitarists.
-                    </p>
+                        {/* Subtitle */}
+                        <p className="mt-4 max-w-lg text-base leading-relaxed text-text-secondary sm:text-lg">
+                            Upload covers, share tabs, and level up your skills with a global community of guitarists.
+                        </p>
 
-                    {/* CTAs */}
-                    <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-                        {auth.user ? (
-                            <Link
-                                href={route('login')}
-                                id="hero-cta-explore"
-                                className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-8 py-3.5 text-base font-semibold transition-all hover:bg-surface-elevated hover:border-accent/30 hover:scale-[1.02] active:scale-95"
-                            >
-                                <PlayCircle size={18} className="text-accent" />
-                                Explore feed
-                            </Link>
-                        ) : (
-                            <>
-                                <Link
-                                    href={route('register')}
-                                    id="hero-cta-register"
-                                    className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 text-base font-bold text-white shadow-[0_0_24px_rgba(255,77,0,0.4)] transition-all hover:bg-accent-hover hover:shadow-[0_0_32px_rgba(255,77,0,0.55)] hover:scale-[1.03] active:scale-95"
-                                >
-                                    <Guitar size={18} className="transition-transform group-hover:-rotate-12" />
-                                    Start for free
-                                </Link>
+                        {/* CTAs */}
+                        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+                            {auth.user ? (
                                 <Link
                                     href={route('login')}
                                     id="hero-cta-explore"
@@ -272,10 +254,21 @@ export default function Welcome({ auth }: PageProps) {
                                     <PlayCircle size={18} className="text-accent" />
                                     Explore feed
                                 </Link>
-                            </>
-                        )}
-                    </div>
-                </section>
+                            ) : (
+                                <>
+                                    <Link
+                                        href={route('register')}
+                                        id="hero-cta-register"
+                                        className="group inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 text-base font-bold text-white shadow-[0_0_24px_rgba(255,77,0,0.4)] transition-all hover:bg-accent-hover hover:shadow-[0_0_32px_rgba(255,77,0,0.55)] hover:scale-[1.03] active:scale-95"
+                                    >
+                                        <Guitar size={18} className="transition-transform group-hover:-rotate-12" />
+                                        Explore feed
+                                    </Link>
+                                </>
+                            )}
+                        </div>
+                    </section>
+                </BeamsBackground>
 
                 {/* ══════════════════════════
                     CAROUSEL SECTION
