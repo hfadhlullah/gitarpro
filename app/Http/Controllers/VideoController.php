@@ -113,10 +113,6 @@ class VideoController extends Controller
             // Store directly to s3 disk (MinIO)
             $path = $file->storeAs('videos', $filename, 's3');
 
-            if ($path === false) {
-                throw new \RuntimeException('Could not write video to storage.');
-            }
-
             // Create DB record
             $video = Video::create([
                 'user_id' => $request->user()->id,
